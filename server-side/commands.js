@@ -18,10 +18,11 @@ mp.events.addCommand('acceptfare', (player) => {
     player.outputChatBox(`You have accepted the fare rate of this taxi.`);
 
     var oc = player.vehicle.getOccupants();
-
+    //Debug
     for (var i = 0; i < 4; i++) {
         console.dir(i);
     }
+    //-----
 
     mp.events.call("TaxiFareStart", player);
 });
