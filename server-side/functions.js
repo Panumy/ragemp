@@ -1,3 +1,5 @@
+var timer;
+
 mp.events.add(
 {
         "TaxiFareStart": (driver, passenger) => {
@@ -9,22 +11,11 @@ mp.events.add(
 
                 driver.vehicle.setVariable('distancefromfarestart', 0);
 
-                var timer = setInterval(UpdateTimer, 1000, driver);
-                driver.vehicle.setVariable('distancetimer', timer);
-        },
-
-        "DistanceUpdate": (driver) => {
-
-                var distance = driver.vehicle.getVariable('distancefromfarestart') + 0.5; // Adding 0.5 until I make a system that gives actual distance
-
-                driver.vehicle.setVariable('distancefromfarestart', distance);
-
-                driver.outputChatBox(`Distance updated by 0.5 (CD: ${distance})`);
-
+                timer = setInterval(function(){ UpdateTimer(driver); }, 1000);
+                //driver.vehicle.setVariable('distancetimer', timer);
         },
 
         "TaxiFareStop": (driver) => {
-                //var passenger = driver.getVariable('taxipassenger');
 
                 var distance = driver.vehicle.getVariable('distancefromfarestart');
 
@@ -38,10 +29,18 @@ mp.events.add(
                 driver.outputChatBox(`You have stopped the taxi meter. Distance was: ${distance} miles, price: $${price}.`);
 
                 driver.vehicle.setVariable('distancefromfarestart', 0);
-                clearInterval(driver.vehicle.getVariable('distancetimer'));
+                clearInterval(timer);
         }
 });
 
 function UpdateTimer(driver) {
-        mp.events.call("DitanceUpdate", driver)
+        console.dir(`In UpdateTimer with driver (${driver})`);
+
+        var distance = driver.vehicle.getVariable('distancefromfarestart') + 0.5; // Adding 0.5 until I make a system that gives actual distance
+
+        console.dir(`Added 0.5 to distance (${distance})`);
+
+        driver.vehicle.setVariable('distancefromfarestart', distance);
+
+        driver.outputChatBox(`Distance updated by 0.5 (CD: ${distance})`);
 }
