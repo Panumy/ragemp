@@ -15,14 +15,24 @@ mp.events.addCommand('setfare', (player, fare) => {
 
 mp.events.addCommand('acceptfare', (player) => {
     if (player.vehicle.model != mp.joaat('taxi')) return player.outputChatBox(`You must be in a taxi.`);
-    player.outputChatBox(`You have accepted the fare rate of this taxi.`);
 
-    var oc = player.vehicle.getOccupants();
-    //Debug
-    for (var i = 0; i < 4; i++) {
-        console.dir(i);
-    }
-    //-----
+    let driver = player.vehicle.getOccupant(-1);
 
-    mp.events.call("TaxiFareStart", player);
+    mp.events.call("TaxiFareStart", driver, player);
+});
+
+mp.events.addCommand('stopmeter', (player) => {
+    // You must be a taxi driver checker here
+    if (player.vehicle.model != mp.joaat('taxi')) return player.outputChatBox(`You must be in a taxi.`);
+
+    mp.events.call("TaxiFareStop", player);
+});
+
+// Debug
+mp.events.addCommand('adddistance', (player) => {
+    var distance = player.vehicle.getVariable('distancefromfarestart') + 0.4;
+    distance = Math.round(distance * 100) / 100; // Round up to two decimals
+    player.vehicle.setVariable('distancefromfarestart', distance);
+
+    player.outputChatBox(`DEBUG: The distance is now ${distance}`);
 });
