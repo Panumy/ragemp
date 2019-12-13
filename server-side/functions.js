@@ -1,5 +1,3 @@
-var timer;
-
 mp.events.add(
 {
         "TaxiFareStart": (driver, passenger) => {
@@ -11,8 +9,15 @@ mp.events.add(
 
                 driver.vehicle.setVariable('distancefromfarestart', 0);
 
-                timer = setInterval(function(){ UpdateTimer(driver); }, 1000);
+                UpdateTaxiPos(driver.vehicle);
+
+                driver.call("TaxiFareTimerStart");
+
                 //driver.vehicle.setVariable('distancetimer', timer);
+        },
+
+        "TaxiTimerAssign" : (vehicle, timer) => {
+                vehicle.setVariable('TaxiTimer', timer);
         },
 
         "TaxiFareStop": (driver) => {
@@ -29,18 +34,59 @@ mp.events.add(
                 driver.outputChatBox(`You have stopped the taxi meter. Distance was: ${distance} miles, price: $${price}.`);
 
                 driver.vehicle.setVariable('distancefromfarestart', 0);
+                //driver.call("TaxiFareTimerStop");
+
+                var timer = driver.vehicle.getVariable('TaxiTimer');
+
                 clearInterval(timer);
+        },
+
+        "TaxiFareUpdate" : driver =>
+        {
+                let currentpos = driver.vehicle.position;
+
+                let distance = driver.vehicle.getVariable('distancefromfarestart') + driver.dist(driver.vehicle.positions.taxi);
+
+                distance = Math.round(distance * 100) / 100;
+
+                //console.dir(`CP | x: ${currentpos.x} y: ${currentpos.y} z: ${currentpos.z}`);
+                //console.dir(`CP | x: ${driver.vehicle.positions.taxi.x} y: ${driver.vehicle.positions.taxi.y} z: ${driver.vehicle.positions.taxi.z}`);
+
+                driver.vehicle.setVariable('distancefromfarestart', distance);
+
+                driver.outputChatBox(`Distance updated (CD: ${distance})`);
+
+                UpdateTaxiPos(driver.vehicle);
         }
 });
 
-function UpdateTimer(driver) {
-        console.dir(`In UpdateTimer with driver (${driver})`);
+function UpdateTaxiPos(vehicle)
+{
+        let vehpos = vehicle.position;
 
-        var distance = driver.vehicle.getVariable('distancefromfarestart') + 0.5; // Adding 0.5 until I make a system that gives actual distance
+        vehicle.positions = { taxi: null}
 
-        console.dir(`Added 0.5 to distance (${distance})`);
+        vehicle.positions.taxi = {
+                x: vehpos.x,
+                y: vehpos.y,
+                z: vehpos.z
+        }
 
-        driver.vehicle.setVariable('distancefromfarestart', distance);
+        let temppos = vehicle.position.taxi;
 
-        driver.outputChatBox(`Distance updated by 0.5 (CD: ${distance})`);
+        //console.dir(`UTP | x: ${vehpos.x} y: ${vehpos.y} z: ${vehpos.z}`); // Debug
+        //console.dir(`UTP | ${temppos} | ${vehicle.position}`)
+        //console.dir(`UTP | x: ${temppos.x} y: ${temppos.y} z: ${temppos.z}`); // Debug
+
+
+
+        /*vehicle.setVariable('taxix',vehpos.x);
+        vehicle.setVariable('taxiy',vehpos.y);
+        vehicle.setVariable('taxiz',vehpos.z);*/
+
+        /*vehicle.setVariable({
+                taxix: vehpos.x,
+                taxiy: vehpos.y,
+                taxiz: vehpos.z
+        });*/
 }
