@@ -43,7 +43,7 @@ mp.events.add(
 
         "TaxiFareUpdate" : driver =>
         {
-                let currentpos = driver.vehicle.position;
+                //let currentpos = driver.vehicle.position;
 
                 let distance = driver.vehicle.getVariable('distancefromfarestart') + driver.dist(driver.vehicle.positions.taxi);
 
@@ -72,21 +72,9 @@ function UpdateTaxiPos(vehicle)
                 z: vehpos.z
         }
 
-        let temppos = vehicle.position.taxi;
+        //let temppos = vehicle.position.taxi;
 
         //console.dir(`UTP | x: ${vehpos.x} y: ${vehpos.y} z: ${vehpos.z}`); // Debug
         //console.dir(`UTP | ${temppos} | ${vehicle.position}`)
         //console.dir(`UTP | x: ${temppos.x} y: ${temppos.y} z: ${temppos.z}`); // Debug
-
-
-
-        /*vehicle.setVariable('taxix',vehpos.x);
-        vehicle.setVariable('taxiy',vehpos.y);
-        vehicle.setVariable('taxiz',vehpos.z);*/
-
-        /*vehicle.setVariable({
-                taxix: vehpos.x,
-                taxiy: vehpos.y,
-                taxiz: vehpos.z
-        });*/
 }
