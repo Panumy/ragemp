@@ -1,66 +1,57 @@
 mp.events.add(
 {
         "TaxiFareStart": (driver, passenger) => {
-                passenger.outputChatBox(`You have successfully accepted the fare.`);
-                driver.outputChatBox(`The passenger has accepted the fare and the timer has started.`);
+                passenger.outputChatBox(`You have successfully <b style='color: green'>accepted</b> the fare.`); // pretty straight forward
+                driver.outputChatBox(`The passenger has <b style='color: green'>accepted</b> the fare and the timer has started.`); // pretty straight forward
 
-                passenger.setVariable('taxidriver', driver);
-                driver.setVariable('taxipassenger', passenger);
+                driver.setVariable('taxipassenger', passenger); // Saves the passenger player ID
 
-                driver.vehicle.setVariable('distancefromfarestart', 0);
+                driver.vehicle.setVariable('taxidriver', driver); // Saves the driver player ID
+                driver.vehicle.setVariable('distancefromfarestart', 0); // Resets the distance of the taxi meter fare travel
 
-                UpdateTaxiPos(driver.vehicle);
+                UpdateTaxiPos(driver.vehicle); // Saves the taxi's current position
 
-                driver.call("TaxiFareTimerStart");
-
-                //driver.vehicle.setVariable('distancetimer', timer);
+                driver.call("TaxiFareTimerStart"); // Calls the client-side function to start the timer
         },
 
-        "TaxiTimerAssign" : (vehicle, timer) => {
-                vehicle.setVariable('TaxiTimer', timer);
-        },
+        "TaxiFareStop": (driver, vehicle) => {
 
-        "TaxiFareStop": (driver) => {
-
-                var distance = driver.vehicle.getVariable('distancefromfarestart');
+                var distance = vehicle.getVariable('distancefromfarestart'); // Grabs the taxi's current location
 
                 distance = Math.round(distance * 100) / 100; // Round up to two decimals
 
-                var price = distance * driver.vehicle.getVariable('fareprice');
+                var price = distance * vehicle.getVariable('fareprice'); // Calculates the total fare price
 
                 price = Math.round(price * 100) / 100; // Round up to two decimals
 
-                driver.getVariable('taxipassenger').outputChatBox(`The taxi driver has stopped the taxi meter.`);
-                driver.outputChatBox(`You have stopped the taxi meter. Distance was: ${distance} miles, price: $${price}.`);
+                driver.getVariable('taxipassenger').outputChatBox(`The taxi driver has <b style='color: red'>stopped</b> the taxi meter. (Distance traveled: ${distance} Price paid: <b style='color: green'>$${price}</b>)`); // Pretty straight forward
+                driver.outputChatBox(`You have <b style='color: red'>stopped</b> the taxi meter. Distance was: ${distance} miles, price: <b style='color: green'>$${price}</b>.`); // Pretty straight forward
 
-                driver.vehicle.setVariable('distancefromfarestart', 0);
-                //driver.call("TaxiFareTimerStop");
+                vehicle.setVariable('distancefromfarestart', 0); // Resets the distance of the taxi meter fare travel
 
-                var timer = driver.vehicle.getVariable('TaxiTimer');
-
-                clearInterval(timer);
+                driver.call("TaxiFareTimerStop"); // Calls the client-side function to stop the timer
         },
 
-        "TaxiFareUpdate" : driver =>
+        "TaxiFareUpdate": (driver) =>
         {
-                //let currentpos = driver.vehicle.position;
+                if (driver.vehicle) // Checks if the taxi driver is in the vehicle
+                {
+                        let distance = (driver.vehicle.getVariable('distancefromfarestart') + driver.dist(driver.vehicle.positions.taxi) / 1000); // Adds the calculated distance and formats it into miles
 
-                let distance = driver.vehicle.getVariable('distancefromfarestart') + driver.dist(driver.vehicle.positions.taxi);
+                        distance = Math.round(distance * 100) / 100; // Rounds up to two decimals
 
-                distance = Math.round(distance * 100) / 100;
+                        driver.vehicle.setVariable('distancefromfarestart', distance); // Saves the current distance traveled
 
-                //console.dir(`CP | x: ${currentpos.x} y: ${currentpos.y} z: ${currentpos.z}`);
-                //console.dir(`CP | x: ${driver.vehicle.positions.taxi.x} y: ${driver.vehicle.positions.taxi.y} z: ${driver.vehicle.positions.taxi.z}`);
+                        //driver.outputChatBox(`Distance updated (CD: ${distance} miles)`); //Debug
 
-                driver.vehicle.setVariable('distancefromfarestart', distance);
+                        if(driver.vehicle.engineHealth < 0) return mp.events.call("TaxiFareStop", driver, driver.vehicle); // If vehicle is destroyed, stop the taxi meter
 
-                driver.outputChatBox(`Distance updated (CD: ${distance})`);
-
-                UpdateTaxiPos(driver.vehicle);
+                        UpdateTaxiPos(driver.vehicle); // Saves the current taxi position
+                }
         }
 });
 
-function UpdateTaxiPos(vehicle)
+function UpdateTaxiPos(vehicle) // Used to save the current taxi position to be used in the future for comparison in distance calculation
 {
         let vehpos = vehicle.position;
 
@@ -71,10 +62,4 @@ function UpdateTaxiPos(vehicle)
                 y: vehpos.y,
                 z: vehpos.z
         }
-
-        //let temppos = vehicle.position.taxi;
-
-        //console.dir(`UTP | x: ${vehpos.x} y: ${vehpos.y} z: ${vehpos.z}`); // Debug
-        //console.dir(`UTP | ${temppos} | ${vehicle.position}`)
-        //console.dir(`UTP | x: ${temppos.x} y: ${temppos.y} z: ${temppos.z}`); // Debug
 }
